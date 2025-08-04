@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: spring-ai-demo
+  config:
+    import: optional:file:.env[.properties]
+  ai:
+    openai:
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gemini-2.0-flash
+        completions-path: /chat/completions
