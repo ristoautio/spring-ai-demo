@@ -19,7 +19,7 @@ public class AiController {
     }
 
     @GetMapping("/prompt")
-    public String getAiResponseForPrompt(@RequestParam(name = "prompt") String prompt) {
+    public MovieRecommendationResponse getAiResponseForPrompt(@RequestParam(name = "prompt") String prompt) {
         return aiService.getAiResponseForPromptWithMcp(prompt);
     }
 

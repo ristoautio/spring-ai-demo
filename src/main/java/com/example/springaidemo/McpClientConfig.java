@@ -15,8 +15,8 @@ import java.time.Duration;
 @Slf4j
 public class McpClientConfig {
 
-    @Bean
-    public McpSyncClient mcpSyncClient() {
+    @Bean("mcp-sqlite")
+    public McpSyncClient mcpDBClient() {
         var stdioParams = ServerParameters.builder("uvx")
                 .args("mcp-sqlite", getPathFor("netflix.db"), "-m", getPathFor("db-meta.yml"))
                 .build();
@@ -27,7 +27,7 @@ public class McpClientConfig {
 
         var init = mcpClient.initialize();
 
-        log.info("MCP Initialized: {}", init);
+        log.info("MCP DB Client Initialized: {}", init);
 
         return mcpClient;
     }

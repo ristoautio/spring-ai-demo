@@ -18,7 +18,8 @@ import org.springframework.stereotype.Service;
 public class AiService {
 
     private final OpenAiChatModel chatModel;
-    private final McpSyncClient mcpSyncClient;
+    private final McpSyncClient sqliteMcp;
+    private final SyncMcpToolCallbackProvider toolCallbackProvider;
 
     public MovieRecommendationResponse getMovieRecommendations(String promptMessage) {
 
@@ -38,17 +39,45 @@ public class AiService {
         return outputConverter.convert(content);
     }
 
-    public String getAiResponseForPromptWithMcp(String promptMessage) {
+    public MovieRecommendationResponse getAiResponseForPromptWithMcp(String promptMessage) {
+
         ChatClient client = ChatClient.builder(chatModel)
-                .defaultToolCallbacks(new SyncMcpToolCallbackProvider(mcpSyncClient))
+                .defaultToolCallbacks(
+                        new SyncMcpToolCallbackProvider(sqliteMcp),
+                        toolCallbackProvider
+                )
                 .defaultAdvisors(new SimpleLoggerAdvisor())
+                .defaultOptions(OpenAiChatOptions.builder()
+                        .temperature(0.1)
+                        .build())
                 .build();
 
-        ChatResponse response = client.prompt(Prompt.builder().content(promptMessage).build()).call().chatResponse();
 
-        String content = response.getResult().getOutput().getText();
+        var outputConverter = new BeanOutputConverter<>(MovieRecommendationResponse.class);
 
-        return content;
+        ChatResponse infoResponse = client.prompt()
+                .user(u -> u.text("""
+            Given the context, research and gather information for 5 movie recommendations.
+            Use brave to search for the movies and get detailed descriptions.
+            Use the database to find ratings for each movie.
+            
+            Context: {context}
+            """)
+                        .param("context", promptMessage))
+                .call().chatResponse();
+
+        return client.prompt()
+                .user(u -> u.text("""
+            Based on the following research, create 5 movie recommendations in the specified format:
+            
+            Research Data: {research}
+            
+            {format}
+            """)
+                        .param("research", infoResponse.getResult().getOutput().getText())
+                        .param("format", outputConverter.getFormat()))
+                .call()
+                .entity(outputConverter);
     }
 
 }

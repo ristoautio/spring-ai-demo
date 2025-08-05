@@ -61,3 +61,25 @@ databases:
           WHERE c.name LIKE :actor_name
           ORDER BY s.release_date DESC
 
+      get_movie_rating_by_name:
+        title: Find movie rating by partial title match
+        description: Returns rating and other details for movies that match the provided title (partial match supported).
+        sql: |-
+          SELECT 
+            show_id, 
+            title, 
+            category,
+            rating, 
+            duration, 
+            release_date,
+            country,
+            description
+          FROM netflix_shows
+          WHERE title LIKE '%' || :movie_name || '%'
+          ORDER BY 
+            CASE 
+              WHEN LOWER(title) = LOWER(:movie_name) THEN 1
+              WHEN LOWER(title) LIKE LOWER(:movie_name) || '%' THEN 2
+              ELSE 3
+            END,
+            release_date DESC

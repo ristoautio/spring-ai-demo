@@ -11,4 +11,20 @@ spring:
         options:
           model: gemini-2.0-flash
         completions-path: /chat/completions
-        
+    mcp:
+      client:
+        stdio:
+          connections:
+            brave-search:
+              command: npx
+              args:
+                - "-y"
+                - "@modelcontextprotocol/server-brave-search"
+              env:
+                BRAVE_API_KEY: ${BRAVE_API_KEY}
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.ai.chat.client.advisor: DEBUG
+    org.springframework.ai.mcp: DEBUG
