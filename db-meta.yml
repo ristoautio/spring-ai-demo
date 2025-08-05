@@ -1,0 +1,63 @@
+databases:
+  netflix:
+    tables:
+      netflix_shows:
+        description: Main table containing Netflix show and movie information.
+        columns:
+          show_id: Unique identifier for each show or movie.
+          category: Whether the content is a TV Show or Movie.
+          title: The title of the show or movie.
+          director: Director(s) of the content.
+          country: Country where the content was produced.
+          release_date: Date when the content was released on Netflix.
+          rating: Content rating (e.g., TV-MA, PG-13).
+          duration: Length of content (seasons for TV shows, minutes for movies).
+          description: Brief summary of the content.
+
+      cast_members:
+        description: Table of unique actors and performers.
+        columns:
+          cast_id: Unique identifier for each cast member.
+          name: The actor's full name.
+
+      show_cast:
+        description: Junction table linking shows to their cast members.
+        columns:
+          show_id: Foreign key to netflix_shows table.
+          cast_id: Foreign key to cast_members table.
+
+      content_types:
+        description: Categories and genres of content.
+        columns:
+          type_id: Unique identifier for each content type.
+          name: The name of the content type or genre.
+
+      show_types:
+        description: Junction table linking shows to their content types.
+        columns:
+          show_id: Foreign key to netflix_shows table.
+          type_id: Foreign key to content_types table.
+
+    queries:
+      get_shows_by_type:
+        title: Find shows by content type
+        description: Returns all shows matching a specific content type/genre.
+        sql: |-
+          SELECT s.show_id, s.title, s.category, s.release_date, s.rating, s.duration
+          FROM netflix_shows s
+          JOIN show_types st ON s.show_id = st.show_id
+          JOIN content_types t ON st.type_id = t.type_id
+          WHERE t.name = :content_type
+          ORDER BY s.release_date DESC
+
+      get_actor_filmography:
+        title: Get actor's filmography
+        description: Returns all shows and movies a specific actor has appeared in.
+        sql: |-
+          SELECT s.show_id, s.title, s.category, s.release_date, s.country
+          FROM netflix_shows s
+          JOIN show_cast sc ON s.show_id = sc.show_id
+          JOIN cast_members c ON sc.cast_id = c.cast_id
+          WHERE c.name LIKE :actor_name
+          ORDER BY s.release_date DESC
+

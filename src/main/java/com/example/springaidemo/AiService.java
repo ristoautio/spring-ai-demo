@@ -1,9 +1,13 @@
 package com.example.springaidemo;
 
+import io.modelcontextprotocol.client.McpSyncClient;
 import lombok.AllArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.converter.BeanOutputConverter;
+import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.ResponseFormat;
@@ -14,10 +18,11 @@ import org.springframework.stereotype.Service;
 public class AiService {
 
     private final OpenAiChatModel chatModel;
+    private final McpSyncClient mcpSyncClient;
 
-    public PromptResponse getAiResponseForPrompt(String promptMessage) {
+    public MovieRecommendationResponse getMovieRecommendations(String promptMessage) {
 
-        var outputConverter = new BeanOutputConverter<>(PromptResponse.class);
+        var outputConverter = new BeanOutputConverter<>(MovieRecommendationResponse.class);
 
         var jsonSchema = outputConverter.getJsonSchema();
 
@@ -32,4 +37,18 @@ public class AiService {
 
         return outputConverter.convert(content);
     }
+
+    public String getAiResponseForPromptWithMcp(String promptMessage) {
+        ChatClient client = ChatClient.builder(chatModel)
+                .defaultToolCallbacks(new SyncMcpToolCallbackProvider(mcpSyncClient))
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+                .build();
+
+        ChatResponse response = client.prompt(Prompt.builder().content(promptMessage).build()).call().chatResponse();
+
+        String content = response.getResult().getOutput().getText();
+
+        return content;
+    }
+
 }
