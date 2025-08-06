@@ -4,6 +4,11 @@ spring:
   config:
     import: optional:file:.env[.properties]
   ai:
+    ollama:
+      chat:
+        options:
+          model: llama3.2
+          temperature: 0.7
     openai:
       base-url: https://generativelanguage.googleapis.com/v1beta/openai
       api-key: ${OPENAI_API_KEY}

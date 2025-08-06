@@ -18,9 +18,14 @@ public class AiController {
         return aiService.getMovieRecommendations(prompt);
     }
 
-    @GetMapping("/prompt")
+    @GetMapping("/recommendations-mcp")
     public MovieRecommendationResponse getAiResponseForPrompt(@RequestParam(name = "prompt") String prompt) {
         return aiService.getAiResponseForPromptWithMcp(prompt);
+    }
+
+    @GetMapping("/cinema")
+    public String getAiResponseForPromptWithAdvisor(@RequestParam(name = "prompt") String prompt) {
+        return aiService.multiStep(prompt);
     }
 
 }
