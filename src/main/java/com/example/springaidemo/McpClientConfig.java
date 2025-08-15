@@ -25,6 +25,7 @@ public class McpClientConfig {
                 .requestTimeout(Duration.ofSeconds(10))
                 .build();
 
+        IllegalArgumentException foo = new IllegalArgumentException();
         var init = mcpClient.initialize();
 
         log.info("MCP DB Client Initialized: {}", init);
@@ -33,6 +34,9 @@ public class McpClientConfig {
     }
 
     private static String getPathFor(String fileName) {
+        if(fileName.length()< 1) {
+            new IllegalArgumentException("File name must not be empty");
+        }
         return Paths.get(System.getProperty("user.dir"), fileName).toString();
     }
 
